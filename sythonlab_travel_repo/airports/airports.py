@@ -11,25 +11,7 @@ from sythonlab_travel_repo.airports.config import FilterConfig
 from sythonlab_travel_repo.airports.enums import AirportType, AirportSortField
 from sythonlab_travel_repo.airports.models import Airport
 from sythonlab_travel_repo.core.enums import Continent, FilterType, SortOrder
-
-
-def _match_str(field_value: Optional[str], value: str, filter_type: FilterType) -> bool:
-    """Test whether a string field satisfies a query under the given filter strategy.
-
-    Args:
-        field_value: The value from the data record. Returns ``False`` if ``None``.
-        value: The query string to match against.
-        filter_type: ``EQ`` for exact match, ``CONTAINS`` for substring match.
-            Both are case-insensitive.
-
-    Returns:
-        ``True`` if the field matches the query, ``False`` otherwise.
-    """
-    if field_value is None:
-        return False
-    if filter_type is FilterType.CONTAINS:
-        return value.lower() in field_value.lower()
-    return field_value.lower() == value.lower()
+from sythonlab_travel_repo.core.utils import match_str
 
 
 class AirportService:
@@ -119,19 +101,19 @@ class AirportService:
                 return False
             if continent is not None and a.get("continent") != continent.name:
                 return False
-            if icao_code is not None and not _match_str(a.get("ident"), icao_code, icao_code_ft):
+            if icao_code is not None and not match_str(a.get("ident"), icao_code, icao_code_ft):
                 return False
-            if name is not None and not _match_str(a.get("name"), name, name_ft):
+            if name is not None and not match_str(a.get("name"), name, name_ft):
                 return False
-            if iso_country is not None and not _match_str(a.get("iso_country"), iso_country, iso_country_ft):
+            if iso_country is not None and not match_str(a.get("iso_country"), iso_country, iso_country_ft):
                 return False
-            if iso_region is not None and not _match_str(a.get("iso_region"), iso_region, iso_region_ft):
+            if iso_region is not None and not match_str(a.get("iso_region"), iso_region, iso_region_ft):
                 return False
-            if city_name is not None and not _match_str(a.get("municipality"), city_name, city_name_ft):
+            if city_name is not None and not match_str(a.get("municipality"), city_name, city_name_ft):
                 return False
-            if gps_code is not None and not _match_str(a.get("gps_code"), gps_code, gps_code_ft):
+            if gps_code is not None and not match_str(a.get("gps_code"), gps_code, gps_code_ft):
                 return False
-            if iata_code is not None and not _match_str(a.get("iata_code"), iata_code, iata_code_ft):
+            if iata_code is not None and not match_str(a.get("iata_code"), iata_code, iata_code_ft):
                 return False
             return True
 

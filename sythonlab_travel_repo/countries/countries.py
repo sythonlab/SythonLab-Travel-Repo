@@ -11,25 +11,7 @@ from sythonlab_travel_repo.countries.config import CountryFilterConfig
 from sythonlab_travel_repo.countries.enums import CountrySortField
 from sythonlab_travel_repo.countries.models import Country
 from sythonlab_travel_repo.core.enums import FilterType, Language, SortOrder
-
-
-def _match_str(value: Optional[str], query: str, filter_type: FilterType) -> bool:
-    """Test whether a string field satisfies a query under the given filter strategy.
-
-    Args:
-        value: The value from the data record. Returns ``False`` if ``None``.
-        query: The query string to match against.
-        filter_type: ``EQ`` for exact match, ``CONTAINS`` for substring match.
-            Both are case-insensitive.
-
-    Returns:
-        ``True`` if the field matches the query, ``False`` otherwise.
-    """
-    if value is None:
-        return False
-    if filter_type is FilterType.CONTAINS:
-        return query.lower() in value.lower()
-    return value.lower() == query.lower()
+from sythonlab_travel_repo.core.utils import match_str
 
 
 class CountryService:
@@ -127,16 +109,16 @@ class CountryService:
         def matches(c: dict) -> bool:
             if name is not None:
                 localized = (c.get("name") or {}).get(lang)
-                if not _match_str(localized, name, name_ft):
+                if not match_str(localized, name, name_ft):
                     return False
             if nationality is not None:
                 nat = c.get("nationality")
                 localized = (nat or {}).get(lang) if nat else None
-                if not _match_str(localized, nationality, nationality_ft):
+                if not match_str(localized, nationality, nationality_ft):
                     return False
-            if alpha_2 is not None and not _match_str(c.get("alpha_2"), alpha_2, alpha_2_ft):
+            if alpha_2 is not None and not match_str(c.get("alpha_2"), alpha_2, alpha_2_ft):
                 return False
-            if alpha_3 is not None and not _match_str(c.get("alpha_3"), alpha_3, alpha_3_ft):
+            if alpha_3 is not None and not match_str(c.get("alpha_3"), alpha_3, alpha_3_ft):
                 return False
             return True
 
