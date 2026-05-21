@@ -1,3 +1,8 @@
+"""CountryService for querying, filtering, and sorting country data."""
+
+__author__ = "José Angel Alvarez Abraira"
+__email__ = "sythonlab@gmail.com"
+
 import json
 from pathlib import Path
 from typing import Any, Optional
@@ -9,6 +14,17 @@ from sythonlab_travel_repo.core.enums import FilterType, Language, SortOrder
 
 
 def _match_str(value: Optional[str], query: str, filter_type: FilterType) -> bool:
+    """Test whether a string field satisfies a query under the given filter strategy.
+
+    Args:
+        value: The value from the data record. Returns ``False`` if ``None``.
+        query: The query string to match against.
+        filter_type: ``EQ`` for exact match, ``CONTAINS`` for substring match.
+            Both are case-insensitive.
+
+    Returns:
+        ``True`` if the field matches the query, ``False`` otherwise.
+    """
     if value is None:
         return False
     if filter_type is FilterType.CONTAINS:
@@ -17,12 +33,25 @@ def _match_str(value: Optional[str], query: str, filter_type: FilterType) -> boo
 
 
 class CountryService:
+    """Service class for loading and querying the country dataset.
+
+    Usage::
+
+        CountryService.load()
+        CountryService.configure(
+            filter_config=CountryFilterConfig(name=FilterType.CONTAINS),
+            locale=Language.ES,
+        )
+        results = CountryService.get_countries(name="rep")
+    """
+
     _raw: list[dict] = []
     filter_config: CountryFilterConfig = CountryFilterConfig()
     locale: Language = Language.EN
 
     @classmethod
-    def load(cls):
+    def load(cls) -> None:
+        """Load the country dataset from the bundled JSON file into memory."""
         base_path = Path(__file__).resolve().parent
         file_path = base_path / "data" / "countries.json"
 
@@ -30,12 +59,31 @@ class CountryService:
             cls._raw = json.load(file)
 
     @classmethod
-    def configure(cls, *, filter_config: CountryFilterConfig = CountryFilterConfig(), locale: Language = Language.EN):
+    def configure(
+            cls,
+            *,
+            filter_config: CountryFilterConfig = CountryFilterConfig(),
+            locale: Language = Language.EN,
+    ) -> None:
+        """Set the active filter configuration and display locale for subsequent queries.
+
+        Args:
+            filter_config: Per-field filter strategy to apply.
+            locale: Language used for localized filtering, sorting, and ``__str__``.
+        """
         cls.filter_config = filter_config
         cls.locale = locale
 
     @classmethod
     def _build(cls, raw: dict) -> Country:
+        """Construct a Country from a raw record and apply the current locale.
+
+        Args:
+            raw: Dictionary as loaded from the countries JSON file.
+
+        Returns:
+            A Country instance with its locale set to ``cls.locale``.
+        """
         country = Country.from_dict(raw)
         country.locale = cls.locale
         return country
@@ -51,6 +99,24 @@ class CountryService:
             sort_by: CountrySortField = CountrySortField.NAME,
             sort_order: SortOrder = SortOrder.ASC,
     ) -> list[Country]:
+        """Return countries matching all provided filters, sorted as requested.
+
+        Only supplied parameters are used as filters; omitted ones match everything.
+        String filters respect the strategy set via ``configure()``.
+        Localized fields (name, nationality) are matched in the active locale.
+        Results with a ``None`` value for the sort field are placed last.
+
+        Args:
+            name: Country name filter (matched in the active locale).
+            nationality: Nationality/demonym filter (matched in the active locale).
+            alpha_2: ISO 3166-1 alpha-2 code filter.
+            alpha_3: ISO 3166-1 alpha-3 code filter.
+            sort_by: Field to sort by. Defaults to ``NAME``.
+            sort_order: ``ASC`` or ``DESC``. Defaults to ``ASC``.
+
+        Returns:
+            List of matching ``Country`` instances with locale applied.
+        """
         cfg: CountryFilterConfig = cls.filter_config
         lang = cls.locale.value
         name_ft: FilterType = cfg.name
@@ -91,12 +157,28 @@ class CountryService:
 
     @classmethod
     def get_by_alpha2(cls, code: str) -> Optional[Country]:
+        """Look up a single country by ISO 3166-1 alpha-2 code (case-insensitive).
+
+        Args:
+            code: Alpha-2 code to search for (e.g. ``"ES"``).
+
+        Returns:
+            The matching ``Country`` with locale applied, or ``None`` if not found.
+        """
         code = code.upper()
         raw = next((c for c in cls._raw if (c.get("alpha_2") or "").upper() == code), None)
         return cls._build(raw) if raw else None
 
     @classmethod
     def get_by_alpha3(cls, code: str) -> Optional[Country]:
+        """Look up a single country by ISO 3166-1 alpha-3 code (case-insensitive).
+
+        Args:
+            code: Alpha-3 code to search for (e.g. ``"ESP"``).
+
+        Returns:
+            The matching ``Country`` with locale applied, or ``None`` if not found.
+        """
         code = code.upper()
         raw = next((c for c in cls._raw if (c.get("alpha_3") or "").upper() == code), None)
         return cls._build(raw) if raw else None

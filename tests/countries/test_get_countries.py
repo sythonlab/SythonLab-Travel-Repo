@@ -1,3 +1,8 @@
+"""Tests for CountryService filtering, sorting, and lookup methods."""
+
+__author__ = "José Angel Alvarez Abraira"
+__email__ = "sythonlab@gmail.com"
+
 import pytest
 
 from sythonlab_travel_repo.countries.config import CountryFilterConfig

@@ -1,3 +1,8 @@
+"""Tests for AirportService filtering, sorting, and lookup methods."""
+
+__author__ = "José Angel Alvarez Abraira"
+__email__ = "sythonlab@gmail.com"
+
 import pytest
 
 from sythonlab_travel_repo.airports.airports import AirportService
