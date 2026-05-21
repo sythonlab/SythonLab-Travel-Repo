@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="sythonlab_travel_repo/logo.png" alt="SythonLab" width="256" height="256"/>
+</p>
+
 # SythonLab Travel Repository
 
 A Python library for querying airport and country data with filtering, sorting, and multilingual support.

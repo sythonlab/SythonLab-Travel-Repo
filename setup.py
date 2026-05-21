@@ -11,6 +11,7 @@ setup(
     description="Sython Lab Travel Repository",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
+    package_data={"sythonlab_travel_repo": ["logo.png"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
