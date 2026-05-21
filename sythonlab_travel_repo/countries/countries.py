@@ -106,6 +106,9 @@ class CountryService:
         alpha_2_ft: FilterType = cfg.alpha_2
         alpha_3_ft: FilterType = cfg.alpha_3
 
+        if not cls._raw:
+            cls.load()
+
         def matches(c: dict) -> bool:
             if name is not None:
                 localized = (c.get("name") or {}).get(lang)

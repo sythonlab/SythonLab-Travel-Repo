@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sythonlab_travel_repo",
-    version="1.1.3",
+    version="1.1.4",
     packages=find_packages(),
     install_requires=[],
     url="https://github.com/sythonlab/SythonLab-Travel-Repo",
@@ -11,7 +11,11 @@ setup(
     description="Sython Lab Travel Repository",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    package_data={"sythonlab_travel_repo": ["logo.png"]},
+    package_data={"sythonlab_travel_repo": [
+        "logo.png",
+        "airports/data/airports.json",
+        "countries/data/countries.json",
+    ]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

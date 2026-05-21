@@ -94,6 +94,9 @@ class AirportService:
         gps_code_ft: FilterType = cfg.gps_code
         iata_code_ft: FilterType = cfg.iata_code
 
+        if not cls._raw:
+            cls.load()
+
         def matches(a: dict) -> bool:
             if airport_id is not None and a.get("id") != airport_id:
                 return False
