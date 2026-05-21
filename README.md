@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="sythonlab_travel_repo/logo.png" alt="SythonLab" width="256" height="256"/>
+  <img src="https://raw.githubusercontent.com/sythonlab/SythonLab-Travel-Repo/main/sythonlab_travel_repo/logo.png" alt="SythonLab" width="256" height="256"/>
 </p>
 
 # SythonLab Travel Repository
