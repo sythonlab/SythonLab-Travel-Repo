@@ -32,12 +32,12 @@ class Country:
     @classmethod
     def from_dict(cls, data: dict) -> "Country":
         name = data["name"]
-        nat = data.get("nationality")
+        nat: Optional[dict] = data.get("nationality")
         return cls(
             id=data["id"],
             name=LocalizedText(en=name["en"], es=name["es"]),
             alpha_2=data["alpha_2"],
             alpha_3=data["alpha_3"],
             flag=data.get("flag", ""),
-            nationality=LocalizedText(en=nat["en"], es=nat["es"]) if nat else None,
+            nationality=LocalizedText(en=nat["en"], es=nat["es"]) if nat is not None else None,
         )
