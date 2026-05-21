@@ -26,10 +26,10 @@ class FilterConfig:
         iata_code: Matching strategy for the IATA code field.
     """
 
-    icao_code: FilterType = FilterType.EQ
-    name: FilterType = FilterType.EQ
-    iso_country: FilterType = FilterType.EQ
-    iso_region: FilterType = FilterType.EQ
-    city_name: FilterType = FilterType.EQ
-    gps_code: FilterType = FilterType.EQ
-    iata_code: FilterType = FilterType.EQ
+    icao_code: FilterType = FilterType.CONTAINS
+    name: FilterType = FilterType.CONTAINS
+    iso_country: FilterType = FilterType.CONTAINS
+    iso_region: FilterType = FilterType.CONTAINS
+    city_name: FilterType = FilterType.CONTAINS
+    gps_code: FilterType = FilterType.CONTAINS
+    iata_code: FilterType = FilterType.CONTAINS

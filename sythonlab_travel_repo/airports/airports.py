@@ -62,9 +62,10 @@ class AirportService:
             sort_by: AirportSortField = AirportSortField.NAME,
             sort_order: SortOrder = SortOrder.ASC,
     ) -> list[Airport]:
-        """Return airports matching all provided filters, sorted as requested.
+        """Return airports matching any of the provided filters, sorted as requested.
 
         Only supplied parameters are used as filters; omitted ones match everything.
+        If multiple filters are provided, an airport is included if it matches at least one (OR logic).
         String filters respect the strategy set via ``configure()``.
         Results with a ``None`` value for the sort field are placed last.
 
@@ -98,27 +99,77 @@ class AirportService:
             cls.load()
 
         def matches(a: dict) -> bool:
-            if airport_id is not None and a.get("id") != airport_id:
-                return False
-            if airport_type is not None and a.get("type") != airport_type.value:
-                return False
-            if continent is not None and a.get("continent") != continent.name:
-                return False
-            if icao_code is not None and not match_str(a.get("ident"), icao_code, icao_code_ft):
-                return False
-            if name is not None and not match_str(a.get("name"), name, name_ft):
-                return False
-            if iso_country is not None and not match_str(a.get("iso_country"), iso_country, iso_country_ft):
-                return False
-            if iso_region is not None and not match_str(a.get("iso_region"), iso_region, iso_region_ft):
-                return False
-            if city_name is not None and not match_str(a.get("municipality"), city_name, city_name_ft):
-                return False
-            if gps_code is not None and not match_str(a.get("gps_code"), gps_code, gps_code_ft):
-                return False
-            if iata_code is not None and not match_str(a.get("iata_code"), iata_code, iata_code_ft):
-                return False
-            return True
+            conditions = []
+            if airport_id is not None:
+                conditions.append(a.get("id") == airport_id)
+            if airport_type is not None:
+                conditions.append(a.get("type") == airport_type.value)
+            if continent is not None:
+                conditions.append(a.get("continent") == continent.name)
+            if icao_code is not None:
+                conditions.append(match_str(a.get("ident"), icao_code, icao_code_ft))
+            if name is not None:
+                conditions.append(match_str(a.get("name"), name, name_ft))
+            if iso_country is not None:
+                conditions.append(match_str(a.get("iso_country"), iso_country, iso_country_ft))
+            if iso_region is not None:
+                conditions.append(match_str(a.get("iso_region"), iso_region, iso_region_ft))
+            if city_name is not None:
+                conditions.append(match_str(a.get("municipality"), city_name, city_name_ft))
+            if gps_code is not None:
+                conditions.append(match_str(a.get("gps_code"), gps_code, gps_code_ft))
+            if iata_code is not None:
+                conditions.append(match_str(a.get("iata_code"), iata_code, iata_code_ft))
+            return any(conditions) if conditions else True
+
+        results = [a for a in cls._raw if matches(a)]
+
+        field = sort_by.value
+        no_value = [a for a in results if a.get(field) is None]
+        has_value = [a for a in results if a.get(field) is not None]
+        has_value.sort(key=lambda a: a[field], reverse=(sort_order is SortOrder.DESC))
+
+        return [Airport.from_dict(a) for a in has_value + no_value]
+
+    @classmethod
+    def search(
+            cls,
+            query: str,
+            *,
+            sort_by: AirportSortField = AirportSortField.NAME,
+            sort_order: SortOrder = SortOrder.ASC,
+    ) -> list[Airport]:
+        """Return airports where any text field contains the query string.
+
+        Searches across: ICAO code, name, country, region, city, GPS code,
+        IATA code, airport type, and continent. Case-insensitive.
+
+        Args:
+            query: Text to look for in any field.
+            sort_by: Field to sort by. Defaults to ``NAME``.
+            sort_order: ``ASC`` or ``DESC``. Defaults to ``ASC``.
+
+        Returns:
+            List of matching ``Airport`` instances.
+        """
+        if not cls._raw:
+            cls.load()
+
+        q = query.lower()
+
+        def matches(a: dict) -> bool:
+            candidates = [
+                a.get("ident"),
+                a.get("name"),
+                a.get("iso_country"),
+                a.get("iso_region"),
+                a.get("municipality"),
+                a.get("gps_code"),
+                a.get("iata_code"),
+                a.get("type"),
+                a.get("continent"),
+            ]
+            return any(q in v.lower() for v in candidates if v)
 
         results = [a for a in cls._raw if matches(a)]
 

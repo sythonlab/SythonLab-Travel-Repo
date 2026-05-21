@@ -23,7 +23,7 @@ class CountryFilterConfig:
         alpha_3: Matching strategy for the ISO 3166-1 alpha-3 code field.
     """
 
-    name: FilterType = FilterType.EQ
-    nationality: FilterType = FilterType.EQ
-    alpha_2: FilterType = FilterType.EQ
-    alpha_3: FilterType = FilterType.EQ
+    name: FilterType = FilterType.CONTAINS
+    nationality: FilterType = FilterType.CONTAINS
+    alpha_2: FilterType = FilterType.CONTAINS
+    alpha_3: FilterType = FilterType.CONTAINS
