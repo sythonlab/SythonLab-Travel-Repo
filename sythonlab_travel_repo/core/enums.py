@@ -13,3 +13,13 @@ class Continent(Enum):
 class FilterType(Enum):
     EQ = "eq"
     CONTAINS = "contains"
+
+
+class SortOrder(Enum):
+    ASC = "asc"
+    DESC = "desc"
+
+
+class Language(Enum):
+    EN = "en"
+    ES = "es"
