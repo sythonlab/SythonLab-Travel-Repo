@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from sythonlab_travel_repo.core.enums import FilterType
 

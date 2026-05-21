@@ -44,6 +44,15 @@ class TestGetByAlpha2:
         assert country.nationality.en == "French"
         assert country.nationality.es == "Francés/a"
 
+    def test_locale_from_config(self):
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        country = CountryService.get_by_alpha2("ES")
+        assert str(country) == "España"
+
+    def test_locale_default_en(self):
+        country = CountryService.get_by_alpha2("ES")
+        assert str(country) == "Spain"
+
 
 class TestGetByAlpha3:
     def test_returns_correct_country(self):
@@ -57,67 +66,75 @@ class TestGetByAlpha3:
     def test_returns_none_when_not_found(self):
         assert CountryService.get_by_alpha3("XXX") is None
 
+    def test_locale_from_config(self):
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        country = CountryService.get_by_alpha3("JPN")
+        assert str(country) == "Japón"
+
 
 class TestFilterByNameEnglish:
     def test_eq_exact(self):
-        results = CountryService.get_countries(name="Spain", language=Language.EN)
+        results = CountryService.get_countries(name="Spain")
         assert len(results) == 1
         assert results[0].alpha_2 == "ES"
 
     def test_eq_case_insensitive(self):
-        lower = CountryService.get_countries(name="spain", language=Language.EN)
-        upper = CountryService.get_countries(name="SPAIN", language=Language.EN)
+        lower = CountryService.get_countries(name="spain")
+        upper = CountryService.get_countries(name="SPAIN")
         assert lower == upper
 
     def test_eq_no_partial_match(self):
-        assert CountryService.get_countries(name="Spa", language=Language.EN) == []
+        assert CountryService.get_countries(name="Spa") == []
 
     def test_contains_partial_match(self):
         CountryService.configure(filter_config=CountryFilterConfig(name=FilterType.CONTAINS))
-        results = CountryService.get_countries(name="land", language=Language.EN)
+        results = CountryService.get_countries(name="land")
         names = [c.name.en for c in results]
         assert any("land" in n.lower() for n in names)
         assert len(results) > 1
 
     def test_contains_case_insensitive(self):
         CountryService.configure(filter_config=CountryFilterConfig(name=FilterType.CONTAINS))
-        lower = CountryService.get_countries(name="republic", language=Language.EN)
-        upper = CountryService.get_countries(name="REPUBLIC", language=Language.EN)
+        lower = CountryService.get_countries(name="republic")
+        upper = CountryService.get_countries(name="REPUBLIC")
         assert lower == upper
 
 
 class TestFilterByNameSpanish:
     def test_eq_exact(self):
-        results = CountryService.get_countries(name="España", language=Language.ES)
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        results = CountryService.get_countries(name="España")
         assert len(results) == 1
         assert results[0].alpha_2 == "ES"
 
     def test_eq_case_insensitive(self):
-        lower = CountryService.get_countries(name="españa", language=Language.ES)
-        upper = CountryService.get_countries(name="ESPAÑA", language=Language.ES)
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        lower = CountryService.get_countries(name="españa")
+        upper = CountryService.get_countries(name="ESPAÑA")
         assert lower == upper
 
     def test_contains_partial_match(self):
-        CountryService.configure(filter_config=CountryFilterConfig(name=FilterType.CONTAINS))
-        results = CountryService.get_countries(name="rep", language=Language.ES)
+        CountryService.configure(filter_config=CountryFilterConfig(name=FilterType.CONTAINS), locale=Language.ES)
+        results = CountryService.get_countries(name="rep")
         assert all("rep" in c.name.es.lower() for c in results)
         assert len(results) > 1
 
 
 class TestFilterByNationality:
     def test_eq_english(self):
-        results = CountryService.get_countries(nationality="French", language=Language.EN)
+        results = CountryService.get_countries(nationality="French")
         assert len(results) == 1
         assert results[0].alpha_2 == "FR"
 
     def test_eq_spanish(self):
-        results = CountryService.get_countries(nationality="Español/a", language=Language.ES)
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        results = CountryService.get_countries(nationality="Español/a")
         assert len(results) == 1
         assert results[0].alpha_2 == "ES"
 
     def test_contains_english(self):
         CountryService.configure(filter_config=CountryFilterConfig(nationality=FilterType.CONTAINS))
-        results = CountryService.get_countries(nationality="ian", language=Language.EN)
+        results = CountryService.get_countries(nationality="ian")
         assert all("ian" in (c.nationality.en or "").lower() for c in results)
         assert len(results) > 1
 
@@ -162,16 +179,12 @@ class TestFilterByAlpha3:
 
 class TestSortingEnglish:
     def test_default_sort_by_name_asc_en(self):
-        results = CountryService.get_countries(language=Language.EN)
+        results = CountryService.get_countries()
         names = [c.name.en for c in results]
         assert names == sorted(names)
 
     def test_sort_by_name_desc_en(self):
-        results = CountryService.get_countries(
-            sort_by=CountrySortField.NAME,
-            sort_order=SortOrder.DESC,
-            language=Language.EN,
-        )
+        results = CountryService.get_countries(sort_by=CountrySortField.NAME, sort_order=SortOrder.DESC)
         names = [c.name.en for c in results]
         assert names == sorted(names, reverse=True)
 
@@ -188,29 +201,20 @@ class TestSortingEnglish:
 
 class TestSortingSpanish:
     def test_sort_by_name_asc_es(self):
-        results = CountryService.get_countries(
-            sort_by=CountrySortField.NAME,
-            sort_order=SortOrder.ASC,
-            language=Language.ES,
-        )
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        results = CountryService.get_countries(sort_by=CountrySortField.NAME, sort_order=SortOrder.ASC)
         names = [c.name.es for c in results]
         assert names == sorted(names)
 
     def test_sort_by_name_desc_es(self):
-        results = CountryService.get_countries(
-            sort_by=CountrySortField.NAME,
-            sort_order=SortOrder.DESC,
-            language=Language.ES,
-        )
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        results = CountryService.get_countries(sort_by=CountrySortField.NAME, sort_order=SortOrder.DESC)
         names = [c.name.es for c in results]
         assert names == sorted(names, reverse=True)
 
     def test_sort_by_nationality_asc_es(self):
-        results = CountryService.get_countries(
-            sort_by=CountrySortField.NATIONALITY,
-            sort_order=SortOrder.ASC,
-            language=Language.ES,
-        )
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        results = CountryService.get_countries(sort_by=CountrySortField.NATIONALITY, sort_order=SortOrder.ASC)
         non_null = [c.nationality.es for c in results if c.nationality]
         assert non_null == sorted(non_null)
 
@@ -220,6 +224,11 @@ class TestSortingSpanish:
         null_start = next((i for i, n in enumerate(nationalities) if n is None), len(nationalities))
         assert all(n is None for n in nationalities[null_start:])
 
+    def test_locale_applied_to_str(self):
+        CountryService.configure(filter_config=CountryFilterConfig(), locale=Language.ES)
+        results = CountryService.get_countries(sort_by=CountrySortField.NAME, sort_order=SortOrder.ASC)
+        assert str(results[0]) == results[0].name.es
+
 
 class TestCombinedFilters:
     def test_name_contains_and_alpha2_contains(self):
@@ -227,7 +236,7 @@ class TestCombinedFilters:
             name=FilterType.CONTAINS,
             alpha_2=FilterType.CONTAINS,
         ))
-        results = CountryService.get_countries(name="united", alpha_2="U", language=Language.EN)
+        results = CountryService.get_countries(name="united", alpha_2="U")
         assert len(results) > 0
         assert all("united" in c.name.en.lower() for c in results)
         assert all("U" in c.alpha_2 for c in results)

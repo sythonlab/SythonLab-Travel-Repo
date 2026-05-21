@@ -49,7 +49,14 @@ class AirportService:
             sort_by: AirportSortField = AirportSortField.NAME,
             sort_order: SortOrder = SortOrder.ASC,
     ) -> list[Airport]:
-        cfg = cls.filter_config
+        cfg: FilterConfig = cls.filter_config
+        icao_code_ft: FilterType = cfg.icao_code
+        name_ft: FilterType = cfg.name
+        iso_country_ft: FilterType = cfg.iso_country
+        iso_region_ft: FilterType = cfg.iso_region
+        city_name_ft: FilterType = cfg.city_name
+        gps_code_ft: FilterType = cfg.gps_code
+        iata_code_ft: FilterType = cfg.iata_code
 
         def matches(a: dict) -> bool:
             if airport_id is not None and a.get("id") != airport_id:
@@ -58,19 +65,19 @@ class AirportService:
                 return False
             if continent is not None and a.get("continent") != continent.name:
                 return False
-            if icao_code is not None and not _match_str(a.get("ident"), icao_code, cfg.icao_code):
+            if icao_code is not None and not _match_str(a.get("ident"), icao_code, icao_code_ft):
                 return False
-            if name is not None and not _match_str(a.get("name"), name, cfg.name):
+            if name is not None and not _match_str(a.get("name"), name, name_ft):
                 return False
-            if iso_country is not None and not _match_str(a.get("iso_country"), iso_country, cfg.iso_country):
+            if iso_country is not None and not _match_str(a.get("iso_country"), iso_country, iso_country_ft):
                 return False
-            if iso_region is not None and not _match_str(a.get("iso_region"), iso_region, cfg.iso_region):
+            if iso_region is not None and not _match_str(a.get("iso_region"), iso_region, iso_region_ft):
                 return False
-            if city_name is not None and not _match_str(a.get("municipality"), city_name, cfg.city_name):
+            if city_name is not None and not _match_str(a.get("municipality"), city_name, city_name_ft):
                 return False
-            if gps_code is not None and not _match_str(a.get("gps_code"), gps_code, cfg.gps_code):
+            if gps_code is not None and not _match_str(a.get("gps_code"), gps_code, gps_code_ft):
                 return False
-            if iata_code is not None and not _match_str(a.get("iata_code"), iata_code, cfg.iata_code):
+            if iata_code is not None and not _match_str(a.get("iata_code"), iata_code, iata_code_ft):
                 return False
             return True
 

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from sythonlab_travel_repo.core.enums import Language
@@ -8,6 +8,9 @@ from sythonlab_travel_repo.core.enums import Language
 class LocalizedText:
     en: str
     es: str
+
+    def __str__(self) -> str:
+        return f"{self.en} / {self.es}"
 
     def get(self, language: Language) -> str:
         return self.en if language is Language.EN else self.es
@@ -21,6 +24,10 @@ class Country:
     alpha_3: str
     flag: str
     nationality: Optional[LocalizedText]
+    locale: Language = field(default=Language.EN, compare=False)
+
+    def __str__(self) -> str:
+        return self.name.get(self.locale)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Country":

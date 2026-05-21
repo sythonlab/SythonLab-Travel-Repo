@@ -22,6 +22,9 @@ class Airport:
     gps_code: Optional[str]
     iata_code: Optional[str]
 
+    def __str__(self) -> str:
+        return f"{self.iata_code} - {self.name}"
+
     @classmethod
     def from_dict(cls, data: dict) -> "Airport":
         return cls(
