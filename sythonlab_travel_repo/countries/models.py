@@ -46,7 +46,7 @@ class Country:
         alpha_2: ISO 3166-1 alpha-2 code (e.g. ``ES``).
         alpha_3: ISO 3166-1 alpha-3 code (e.g. ``ESP``).
         flag: Flag emoji (e.g. ``🇪🇸``).
-        nationality: Demonym in English and Spanish, or ``None`` if unavailable.
+        nationality: Nationality in English and Spanish, or ``None`` if unavailable.
         locale: Display language used by ``__str__``. Not included in equality checks.
     """
 
