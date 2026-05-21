@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="sythonlab_travel_repo",
-    version="0.0.1",
+    version="1.0.0",
     packages=find_packages(),
     install_requires=[],
     url="https://github.com/sythonlab/SythonLab-Travel-Repo",
