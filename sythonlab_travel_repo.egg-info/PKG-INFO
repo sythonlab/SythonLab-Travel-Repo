@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: sythonlab_travel_repo
+Version: 0.0.1
+Summary: Sython Lab Travel Repository
+Home-page: https://github.com/sythonlab/SythonLab-Travel-Repo
+Author: José Angel Alvarez Abraira
+Author-email: sythonlab@gmail.com
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Description-Content-Type: text/markdown
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: summary
