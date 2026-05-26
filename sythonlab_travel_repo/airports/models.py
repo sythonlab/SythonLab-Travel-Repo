@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from sythonlab_travel_repo.airports.enums import AirportType
-from sythonlab_travel_repo.core.enums import Continent
+from sythonlab_travel_repo.core.enums import Continent, Language
 from sythonlab_travel_repo.countries.models import LocalizedText
 
 
@@ -32,6 +32,7 @@ class Airport:
         iata_code: IATA airport code (e.g. ``MAD``), if available.
         country_name: Localized country name resolved from ``iso_country``, if available.
         country_flag: Flag emoji resolved from ``iso_country``, if available.
+        locale: Display language used by ``label``. Not included in equality checks.
     """
 
     id: int
@@ -50,9 +51,31 @@ class Airport:
     iata_code: Optional[str]
     country_name: Optional[LocalizedText] = field(default=None)
     country_flag: Optional[str] = field(default=None)
+    locale: Language = field(default=Language.EN, compare=False)
 
     def __str__(self) -> str:
         return f"{self.iata_code} - {self.name}"
+
+    @property
+    def label(self) -> str:
+        """Formatted display string.
+
+        Example: ``[MAD] - 🇪🇸 Adolfo Suárez Madrid–Barajas Airport, España, ES``
+        """
+        code = self.iata_code or self.icao_code
+        parts = [f"[{code}] -"]
+        if self.country_flag:
+            parts.append(self.country_flag)
+        parts.append(self.name)
+        suffix = []
+        if self.country_name:
+            suffix.append(self.country_name.get(self.locale))
+        if self.iso_country:
+            suffix.append(self.iso_country)
+        if suffix:
+            parts[-1] = parts[-1] + ","
+            parts.append(", ".join(suffix))
+        return " ".join(parts)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Airport":
