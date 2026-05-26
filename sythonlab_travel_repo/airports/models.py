@@ -54,7 +54,7 @@ class Airport:
     locale: Language = field(default=Language.EN, compare=False)
 
     def __str__(self) -> str:
-        return f"{self.iata_code} - {self.name}"
+        return self.label
 
     @property
     def label(self) -> str:
