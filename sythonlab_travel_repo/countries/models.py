@@ -58,8 +58,13 @@ class Country:
     nationality: Optional[LocalizedText]
     locale: Language = field(default=Language.EN, compare=False)
 
+    @property
+    def label(self) -> str:
+        """Return a display label: flag, localized name, and alpha-2 code."""
+        return f"{self.flag} {self.name.get(self.locale)}, {self.alpha_2}"
+
     def __str__(self) -> str:
-        return self.name.get(self.locale)
+        return self.label
 
     @classmethod
     def from_dict(cls, data: dict) -> "Country":
