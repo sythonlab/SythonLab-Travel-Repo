@@ -3,11 +3,12 @@
 __author__ = "José Angel Alvarez Abraira"
 __email__ = "sythonlab@gmail.com"
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from sythonlab_travel_repo.airports.enums import AirportType
 from sythonlab_travel_repo.core.enums import Continent
+from sythonlab_travel_repo.countries.models import LocalizedText
 
 
 @dataclass
@@ -29,6 +30,8 @@ class Airport:
         scheduled_service: Whether the airport has scheduled commercial service.
         gps_code: GPS identifier, if available.
         iata_code: IATA airport code (e.g. ``MAD``), if available.
+        country_name: Localized country name resolved from ``iso_country``, if available.
+        country_flag: Flag emoji resolved from ``iso_country``, if available.
     """
 
     id: int
@@ -45,6 +48,8 @@ class Airport:
     scheduled_service: bool
     gps_code: Optional[str]
     iata_code: Optional[str]
+    country_name: Optional[LocalizedText] = field(default=None)
+    country_flag: Optional[str] = field(default=None)
 
     def __str__(self) -> str:
         return f"{self.iata_code} - {self.name}"
@@ -54,11 +59,15 @@ class Airport:
         """Construct an Airport from a raw JSON record.
 
         Args:
-            data: Dictionary as loaded from the airports JSON file.
+            data: Dictionary as loaded from the airports JSON file, optionally
+                enriched with ``country_name`` (localized name dict) and
+                ``country_flag`` keys by ``AirportService``.
 
         Returns:
             A fully populated Airport instance.
         """
+        cn = data.get("country_name")
+        country_name = LocalizedText(en=cn["en"], es=cn["es"]) if cn else None
         return cls(
             id=data["id"],
             icao_code=data["ident"],
@@ -74,4 +83,6 @@ class Airport:
             scheduled_service=data.get("scheduled_service") == "yes",
             gps_code=data.get("gps_code"),
             iata_code=data.get("iata_code"),
+            country_name=country_name,
+            country_flag=data.get("country_flag"),
         )

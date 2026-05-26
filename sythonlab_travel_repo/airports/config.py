@@ -24,6 +24,7 @@ class FilterConfig:
         city_name: Matching strategy for the city/municipality field.
         gps_code: Matching strategy for the GPS code field.
         iata_code: Matching strategy for the IATA code field.
+        country_name: Matching strategy for the localized country name field.
     """
 
     icao_code: FilterType = FilterType.CONTAINS
@@ -33,3 +34,4 @@ class FilterConfig:
     city_name: FilterType = FilterType.CONTAINS
     gps_code: FilterType = FilterType.CONTAINS
     iata_code: FilterType = FilterType.CONTAINS
+    country_name: FilterType = FilterType.CONTAINS

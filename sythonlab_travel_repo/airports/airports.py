@@ -25,6 +25,7 @@ class AirportService:
     """
 
     _raw: list[dict] = []
+    _country_index: dict[str, dict] = {}
     filter_config: FilterConfig = FilterConfig()
 
     @classmethod
@@ -35,6 +36,27 @@ class AirportService:
 
         with open(file_path, "r", encoding="utf-8") as file:
             cls._raw = json.load(file)
+
+        cls._load_country_index()
+
+    @classmethod
+    def _load_country_index(cls) -> None:
+        """Build a lookup dict of country raw data keyed by alpha-2 code."""
+        countries_path = Path(__file__).resolve().parent.parent / "countries" / "data" / "countries.json"
+        with open(countries_path, "r", encoding="utf-8") as f:
+            cls._country_index = {c["alpha_2"]: c for c in json.load(f)}
+
+    @classmethod
+    def _enrich(cls, raw: dict) -> dict:
+        """Add ``country_name`` and ``country_flag`` to a raw airport dict."""
+        if not cls._country_index:
+            cls._load_country_index()
+        alpha2 = raw.get("iso_country")
+        if alpha2:
+            country = cls._country_index.get(alpha2)
+            if country:
+                return {**raw, "country_name": country.get("name"), "country_flag": country.get("flag")}
+        return raw
 
     @classmethod
     def configure(cls, *, filter_config: FilterConfig) -> None:
@@ -55,6 +77,7 @@ class AirportService:
             name: Optional[str] = None,
             continent: Optional[Continent] = None,
             iso_country: Optional[str] = None,
+            country_name: Optional[str] = None,
             iso_region: Optional[str] = None,
             city_name: Optional[str] = None,
             gps_code: Optional[str] = None,
@@ -75,7 +98,8 @@ class AirportService:
             airport_type: Airport type/size filter.
             name: Airport name filter.
             continent: Continent filter.
-            iso_country: ISO country code filter.
+            iso_country: ISO 3166-1 alpha-2 country code filter (e.g. ``"ES"``).
+            country_name: Country name filter matched against both EN and ES names.
             iso_region: ISO region code filter.
             city_name: City/municipality filter.
             gps_code: GPS code filter.
@@ -90,6 +114,7 @@ class AirportService:
         icao_code_ft: FilterType = cfg.icao_code
         name_ft: FilterType = cfg.name
         iso_country_ft: FilterType = cfg.iso_country
+        country_name_ft: FilterType = cfg.country_name
         iso_region_ft: FilterType = cfg.iso_region
         city_name_ft: FilterType = cfg.city_name
         gps_code_ft: FilterType = cfg.gps_code
@@ -112,6 +137,13 @@ class AirportService:
                 conditions.append(match_str(a.get("name"), name, name_ft))
             if iso_country is not None:
                 conditions.append(match_str(a.get("iso_country"), iso_country, iso_country_ft))
+            if country_name is not None:
+                c = cls._country_index.get(a.get("iso_country") or "")
+                names = c.get("name") or {} if c else {}
+                conditions.append(
+                    match_str(names.get("en"), country_name, country_name_ft)
+                    or match_str(names.get("es"), country_name, country_name_ft)
+                )
             if iso_region is not None:
                 conditions.append(match_str(a.get("iso_region"), iso_region, iso_region_ft))
             if city_name is not None:
@@ -129,7 +161,7 @@ class AirportService:
         has_value = [a for a in results if a.get(field) is not None]
         has_value.sort(key=lambda a: a[field], reverse=(sort_order is SortOrder.DESC))
 
-        return [Airport.from_dict(a) for a in has_value + no_value]
+        return [Airport.from_dict(cls._enrich(a)) for a in has_value + no_value]
 
     @classmethod
     def search(
@@ -158,6 +190,8 @@ class AirportService:
         q = query.lower()
 
         def matches(a: dict) -> bool:
+            c = cls._country_index.get(a.get("iso_country") or "")
+            country_names = c.get("name") or {} if c else {}
             candidates = [
                 a.get("ident"),
                 a.get("name"),
@@ -168,6 +202,8 @@ class AirportService:
                 a.get("iata_code"),
                 a.get("type"),
                 a.get("continent"),
+                country_names.get("en"),
+                country_names.get("es"),
             ]
             return any(q in v.lower() for v in candidates if v)
 
@@ -178,7 +214,7 @@ class AirportService:
         has_value = [a for a in results if a.get(field) is not None]
         has_value.sort(key=lambda a: a[field], reverse=(sort_order is SortOrder.DESC))
 
-        return [Airport.from_dict(a) for a in has_value + no_value]
+        return [Airport.from_dict(cls._enrich(a)) for a in has_value + no_value]
 
     @classmethod
     def get_by_iata_code(cls, code: str) -> Optional[Airport]:
@@ -192,7 +228,7 @@ class AirportService:
         """
         code = code.upper()
         raw = next((a for a in cls._raw if (a.get("iata_code") or "").upper() == code), None)
-        return Airport.from_dict(raw) if raw else None
+        return Airport.from_dict(cls._enrich(raw)) if raw else None
 
     @classmethod
     def get_by_icao_code(cls, code: str) -> Optional[Airport]:
@@ -206,4 +242,4 @@ class AirportService:
         """
         code = code.upper()
         raw = next((a for a in cls._raw if (a.get("ident") or "").upper() == code), None)
-        return Airport.from_dict(raw) if raw else None
+        return Airport.from_dict(cls._enrich(raw)) if raw else None
